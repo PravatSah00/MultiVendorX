@@ -6301,7 +6301,7 @@ class MVX_REST_API {
         if ($modulename == 'products_capability') {
             $MVX->vendor_caps->update_mvx_vendor_role_capability();
         }
-        $all_details['error'] = __('Settings Saved', 'multivendorx');
+        $all_details['error'] = __('Settings Saved', 'multivendorx') . "  " . $modulename;
         return $all_details;
         die;
     }

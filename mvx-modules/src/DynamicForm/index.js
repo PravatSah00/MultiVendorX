@@ -7,11 +7,15 @@ import AutoComplete from './autocomplete';
 import { Calendar } from "react-multi-date-picker"
 import DataTable from 'react-data-table-component';
 import { Editor } from '@tinymce/tinymce-react';
+import DynamicForms from './DynamicForm.jsx';
 
 const AnyReactComponent = ({ text }) => (
 	<img src={text} width="38" height="50" />
 );
-export default class DynamicForm extends React.Component {
+
+// export default DynamicForms;
+export default
+	class DynamicForm extends React.Component {
 	state = {};
 	constructor(props) {
 		super(props);
@@ -191,6 +195,19 @@ export default class DynamicForm extends React.Component {
 			() => {}
 		);
 	}
+
+	// // onMultiChange Cleanup function
+	// onMultiChangeCleanup(e, key, optionKey, optionIndex) {
+	// 	// Settings array is the main array where a particular tab's setting store.
+	// 	setSettingArray((prevSetting) => {
+	// 		const mulipleOptions = prevSetting[key];
+	// 		mulipleOptions[optionIndex] = {
+	// 			key: optionKey,
+	// 			value: e.target.value
+	// 		};
+	// 		return { ...prevSetting, [key]: mulipleOptions };
+	// 	});
+	// }
 
 	onMultiChange(e, o, m, target, indexp) {
 		const new_arraydata = this.state[target] ? this.state[target] : [];

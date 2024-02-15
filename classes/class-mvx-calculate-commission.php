@@ -24,7 +24,7 @@ class MVX_Calculate_Commission {
             $this->mvx_order_reverse_action();
             $this->mvx_order_complete_action();
         } else {
-            add_action( 'mvx_checkout_vendor_order_processed', array( $this, 'mvx_create_commission' ), 10, 3);
+            // add_action( 'mvx_checkout_vendor_order_processed', array( $this, 'mvx_create_commission' ), 10, 3);
             add_action( 'woocommerce_order_refunded', array( $this, 'mvx_create_commission_refunds' ), 99, 2);
         }
         add_action( 'woocommerce_order_status_changed', array( $this, 'mvx_vendor_new_order_mail' ), 99, 3 );
@@ -42,6 +42,7 @@ class MVX_Calculate_Commission {
      */
     public function mvx_create_commission($vendor_order_id, $posted_data, $order) {
         global $MVX;
+
         $vendor_order = wc_get_order($vendor_order_id);
         $processed = $vendor_order->get_meta('_commissions_processed', true);
         if (!$processed && apply_filters( 'wcmp_create_order_commissions_as_per_statuses', true, $vendor_order_id )) {
@@ -481,7 +482,7 @@ class MVX_Calculate_Commission {
      *
      * @param int $product_id
      * @param int $variation_id
-     * @param array $item
+     * @param object $item
      * @param int $order_id
      *
      * @return $commission_amount
@@ -599,7 +600,7 @@ class MVX_Calculate_Commission {
 
     public function mvx_get_commission_rule_by_quantity_rule($product_id = 0, $line_total = 0, $item_quantity = 0, $commission_rule = array()) {
         $mvx_variation_commission_options = mvx_get_option( 'mvx_variation_commission_options', array() );
-         $vendor_commission_quantity_rules = is_array($mvx_variation_commission_options) && isset( $mvx_variation_commission_options['vendor_commission_by_quantity'] ) ? $mvx_variation_commission_options['vendor_commission_by_quantity'] : array();
+        $vendor_commission_quantity_rules = is_array($mvx_variation_commission_options) && isset( $mvx_variation_commission_options['vendor_commission_by_quantity'] ) ? $mvx_variation_commission_options['vendor_commission_by_quantity'] : array();
 
         if( !$product_id ) return false;
 
@@ -817,6 +818,17 @@ class MVX_Calculate_Commission {
         $category_wise_commission->fixed_with_percentage = get_term_meta( $term_id, 'fixed_with_percentage', true ) ? get_term_meta( $term_id, 'fixed_with_percentage', true ) : 0;
         $category_wise_commission->fixed_with_percentage_qty = get_term_meta( $term_id, 'fixed_with_percentage_qty', true ) ? get_term_meta( $term_id, 'fixed_with_percentage_qty', true ) : 0;
         return apply_filters( 'mvx_multiple_category_wise_commission', $category_wise_commission, $product_id );
+    }
+
+    /**
+     * Get the calculated commissions of a order.
+     * It calculate commission before vendor order is created.
+     * @param mixed $order 
+     * @param array $items all items of a vendor order. 
+     * @return void
+     */
+    public function get_items_commissions( $order, $items ) {
+        // $th
     }
 
 }

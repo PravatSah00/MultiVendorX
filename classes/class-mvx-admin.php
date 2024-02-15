@@ -175,22 +175,31 @@ class MVX_Admin {
             wp_enqueue_script( 'site-health' );
             // get all settings fileds
             $settings_fields = mvx_admin_backend_settings_fields_details();
-            // get all tab settings fileds
+            // get all tab of settings fileds
             $mvx_all_backend_tab_list = mvx_admin_backend_tab_settings();
+
+            // if (!empty($settings_fields)) {
+            //     foreach ($settings_fields as $settings_key => $settings_value) {
+            //         foreach ($settings_value as $inter_key => $inter_value) {
+            //             $change_settings_key    =   str_replace("-", "_", $settings_key);
+            //             $option_name = 'mvx_'.$change_settings_key.'_tab_settings';
+            //             $database_value = mvx_get_option($option_name) ? get_option($option_name) : array();
+            //             if (!empty($database_value)) {
+            //                 if (isset($inter_value['key']) && array_key_exists($inter_value['key'], $database_value)) {
+            //                     if (empty($settings_fields[$settings_key][$inter_key]['database_value'])) {
+            //                        $settings_fields[$settings_key][$inter_key]['database_value'] = $database_value[$inter_value['key']];
+            //                     }
+            //                 }
+            //             }
+            //         }
+            //     }
+            // }
+            $database_settings = [];
             if (!empty($settings_fields)) {
-                foreach ($settings_fields as $settings_key => $settings_value) {
-                    foreach ($settings_value as $inter_key => $inter_value) {
-                        $change_settings_key    =   str_replace("-", "_", $settings_key);
-                        $option_name = 'mvx_'.$change_settings_key.'_tab_settings';
-                        $database_value = mvx_get_option($option_name) ? get_option($option_name) : array();
-                        if (!empty($database_value)) {
-                            if (isset($inter_value['key']) && array_key_exists($inter_value['key'], $database_value)) {
-                                if (empty($settings_fields[$settings_key][$inter_key]['database_value'])) {
-                                   $settings_fields[$settings_key][$inter_key]['database_value'] = $database_value[$inter_value['key']];
-                                }
-                            }
-                        }
-                    }
+                foreach ($settings_fields as $key => $value) {
+                    $option_key = 'mvx_' . str_replace("-", "_", $key) .'_tab_settings';
+                    $option_value = get_option($option_key, []);
+                    $database_settings[$key] = (object) $option_value;
                 }
             }
 
@@ -336,8 +345,12 @@ class MVX_Admin {
                 'module12'             =>  __('Unlock ', 'multivendorx'),
                 'module13'             =>  __('Upgrade To Pro', 'multivendorx'),
                 'module14'             =>  __('Pro', 'multivendorx'),
+                'module15'             =>  __('Coupon Code: ', 'multivendorx'),
                 'module16'             =>  __('Activate 30+ Pro Modules', 'multivendorx'),
                 'module17'             =>  __("Enable this Modules by upgrading to our Pro Plan, and unleash your preferred modules to supercharge your website's potential!", 'multivendorx'),
+                'module18'             =>  __("Today's Offer", 'multivendorx'),
+                'module19'             =>  __('Why wait, grab the 15% discount and enjoy using Pro with unlimited features.', 'multivendorx'),
+                'module20'             =>  __('UP15', 'multivendorx'),
                 'module21'             => 'https://multivendorx.com/pricing/'
             );
 
@@ -1234,7 +1247,7 @@ class MVX_Admin {
             );
 
             wp_localize_script( 'mvx-modules-build-frontend', 'appLocalizer', apply_filters('mvx_module_complete_settings', [
-            'apiUrl' => home_url( '/wp-json' ),
+            'apiUrl' => untrailingslashit(get_rest_url()),
             'nonce' => wp_create_nonce( 'wp_rest' ),
             'marker_icon' => $MVX->plugin_url . 'assets/images/store-marker.png',
             'mvx_logo' => $MVX->plugin_url.'assets/images/dclogo.svg',
@@ -1262,6 +1275,7 @@ class MVX_Admin {
             'add_knowladgebase_link' =>  admin_url('admin.php?page=mvx#&submenu=work-board&name=knowladgebase&create=knowladgebase'),
             'knowladgebase_back' =>  admin_url('admin.php?page=mvx#&submenu=work-board&name=knowladgebase'),
             'settings_fields' => apply_filters('mvx-settings-fileds-details', $settings_fields),
+            'databse_settings' => $database_settings,
             'countries'                 => wp_json_encode( array_merge( WC()->countries->get_allowed_country_states(), WC()->countries->get_shipping_country_states() ) ),
             'mvx_all_backend_tab_list' => $mvx_all_backend_tab_list,
             'mvx_vendor_application_header' =>  $vendor_application_header,

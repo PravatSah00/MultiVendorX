@@ -201,7 +201,7 @@ if (!function_exists('is_user_mvx_vendor')) {
 
     /**
      * Check if user is vendor
-     * @param userid or WP_User object
+     * @param  int | WP_User object
      * @return boolean
      */
     function is_user_mvx_vendor($user) {
@@ -214,7 +214,6 @@ if (!function_exists('is_user_mvx_vendor')) {
             return false;
         }
     }
-
 }
 
 if (!function_exists('get_mvx_vendors')) {
@@ -298,7 +297,7 @@ if (!function_exists('get_mvx_vendor')) {
     /**
      * Get individual vendor info by ID
      * @param  int $vendor_id ID of vendor
-     * @return obj            Vendor object
+     * @return object            Vendor object
      */
     function get_mvx_vendor($vendor_id = 0) {
         $vendor = false;
@@ -364,34 +363,33 @@ if (!function_exists('get_mvx_product_vendors')) {
         }
         return $vendor_data;
     }
-
 }
 
-if (!function_exists('doProductVendorLOG')) {
+// if (!function_exists('doProductVendorLOG')) {
 
-    /**
-     * Write to log file
-     */
-    function doProductVendorLOG($str) {
-        global $MVX;
-        $file = $MVX->plugin_path . 'log/product_vendor.log';
-        if (file_exists($file)) {
-            // Open the file to get existing content
-            $current = file_get_contents($file);
-            if ($current) {
-                // Append a new content to the file
-                $current .= "$str" . "\r\n";
-                $current .= "-------------------------------------\r\n";
-            } else {
-                $current = "$str" . "\r\n";
-                $current .= "-------------------------------------\r\n";
-            }
-            // Write the contents back to the file
-            file_put_contents($file, $current);
-        }
-    }
+//     /**
+//      * Write to log file
+//      */
+//     function doProductVendorLOG($str) {
+//         global $MVX;
+//         $file = $MVX->plugin_path . 'log/product_vendor.log';
+//         if (file_exists($file)) {
+//             // Open the file to get existing content
+//             $current = file_get_contents($file);
+//             if ($current) {
+//                 // Append a new content to the file
+//                 $current .= "$str" . "\r\n";
+//                 $current .= "-------------------------------------\r\n";
+//             } else {
+//                 $current = "$str" . "\r\n";
+//                 $current .= "-------------------------------------\r\n";
+//             }
+//             // Write the contents back to the file
+//             file_put_contents($file, $current);
+//         }
+//     }
 
-}
+// }
 
 if (!function_exists('is_vendor_dashboard')) {
 
@@ -755,7 +753,7 @@ if (!function_exists('mvx_check_if_another_vendor_plugin_exits')) {
                 deactivate_plugins('marketplace-stripe-gateway/marketplace-stripe-gateway.php');
             }
         }
-        $vendor_arr = array();
+        $vendor_arr = [];
         $vendor_arr[] = 'dokan-lite/dokan.php';
         $vendor_arr[] = 'wc-vendors/class-wc-vendors.php';
         $vendor_arr[] = 'yith-woocommerce-product-vendors/init.php';
@@ -1799,6 +1797,7 @@ if (!function_exists('mvx_process_order')) {
      * @param WC_Order object $order
      */
     function mvx_process_order($order_id, $order = null) {
+        MVX()->utility->LOG("Hello from mvx_process_order");
         global $wpdb;
         if (!$order)
             $order = wc_get_order($order_id);
@@ -4202,7 +4201,7 @@ if (!function_exists('mvx_find_shop_page_vendor')) {
      */
     function mvx_find_shop_page_vendor() {
         $store_id = false;
-        if (get_queried_object() instanceof WP_Term) {
+        if (get_queried_object()) {
             $vendor_id = get_queried_object()->term_id;
             $store = get_mvx_vendor_by_term($vendor_id);
             $store_id = $store ? $store->id : false;;
@@ -4761,48 +4760,48 @@ if (!function_exists('mvx_admin_backend_settings_fields_details')) {
                     ),
                     'options' => array(
                         array(
-                            'variable'=> "<code>[mvx_vendor]</code>",
-                            'description'=> __('Enables you to create a seller dashboard ', 'multivendorx'),
+                            "<code>[mvx_vendor]</code>",
+                            __('Enables you to create a seller dashboard ', 'multivendorx'),
                         ),
                         array(
-                            'variable'=> "<code>[vendor_registration]</code>",
-                            'description'=> __('Creates a page where the vendor registration form is available', 'multivendorx'),
+                            "<code>[vendor_registration]</code>",
+                            __('Creates a page where the vendor registration form is available', 'multivendorx'),
                         ),
                         array(
-                            'variable'=> "<code>[vendor_coupons]</code>",
-                            'description'=> __('Lets you view  a brief summary of the coupons created by the seller and number of times it has been used by the customers', 'multivendorx'),
+                            "<code>[vendor_coupons]</code>",
+                            __('Lets you view  a brief summary of the coupons created by the seller and number of times it has been used by the customers', 'multivendorx'),
                         ),
                         array(
-                            'variable'=> "<code>[mvx_recent_products]</code>",
-                            'description'=> __('Allows you to glance at the recent products added by seller', 'multivendorx'),
+                            "<code>[mvx_recent_products]</code>",
+                            __('Allows you to glance at the recent products added by seller', 'multivendorx'),
                         ),
                         array(
-                            'variable'=> "<code>[mvx_products]</code>",
-                            'description'=> __('Displays the products added by seller', 'multivendorx'),
+                            "<code>[mvx_products]</code>",
+                            __('Displays the products added by seller', 'multivendorx'),
                         ),
                         array(
-                            'variable'=> "<code>[mvx_featured_products]</code>",
-                            'description'=> __('Exhibits featured products added by the seller', 'multivendorx'),
+                            "<code>[mvx_featured_products]</code>",
+                            __('Exhibits featured products added by the seller', 'multivendorx'),
                         ),
                         array(
-                            'variable'=> "<code>[mvx_sale_products]</code>",
-                            'description'=> __('Allows you to see the products put on sale by a seller', 'multivendorx'),
+                            "<code>[mvx_sale_products]</code>",
+                            __('Allows you to see the products put on sale by a seller', 'multivendorx'),
                         ),
                         array(
-                            'variable'=> "<code>[mvx_top_rated_products]</code>",
-                            'description'=> __('Displays the top rated products of the seller', 'multivendorx'),
+                            "<code>[mvx_top_rated_products]</code>",
+                            __('Displays the top rated products of the seller', 'multivendorx'),
                         ),
                         array(
-                            'variable'=> "<code>[mvx_best_selling_products]</code>",
-                            'description'=> __('Presents you the option of viewing the best selling products of the vendor', 'multivendorx'),
+                            "<code>[mvx_best_selling_products]</code>",
+                            __('Presents you the option of viewing the best selling products of the vendor', 'multivendorx'),
                         ),
                         array(
-                            'variable'=> "<code>[mvx_product_category]</code>",
-                            'description'=> __('Lets you see the product categories used by the vendor', 'multivendorx'),
+                            "<code>[mvx_product_category]</code>",
+                            __('Lets you see the product categories used by the vendor', 'multivendorx'),
                         ),
                         array(
-                            'variable'=> "<code>[mvx_vendorslist]</code>",
-                            'description'=> __('Shows customers a list of available seller.', 'multivendorx'),
+                            "<code>[mvx_vendorslist]</code>",
+                            __('Shows customers a list of available seller.', 'multivendorx'),
                         ),
                     ),
                     'database_value' => '',
@@ -8363,7 +8362,7 @@ if(!function_exists('insert_mvx_vendor_order_data')){
         $order->calculate_totals();
         $order->set_parent_id( $parent_order->get_id() );
         $order->update_meta_data( '_vendor_id', $vendor_id );
-        $order->save();
+        // $order->save();
         foreach ( $meta as $key ) {
             if ( is_callable( [ $order, "set_{$key}" ] ) ) {
                 $order->{"set_{$key}"}( $parent_order->{"get_{$key}"}() );
@@ -8412,4 +8411,17 @@ function mvx_get_random_string( $length = 8 ) {
     }
     // builtin method failed, try manual method
     return substr( str_shuffle( str_repeat( '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', wp_rand( 1, 10 ) ) ), 1, $length );
+}
+
+function mvx_namespace_approve( $value ) {
+	
+	$rest_prefix = trailingslashit( rest_get_url_prefix() );
+	
+	// Allow third party plugins use our authentication methods.
+	$mvx_support = ( false !== strpos( $_SERVER['REQUEST_URI'], $rest_prefix . 'mvx' ) );
+	
+	if($value || $mvx_support) $return = true;
+	else $return = false;
+	
+	return $return;
 }

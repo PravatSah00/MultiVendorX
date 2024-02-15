@@ -118,7 +118,7 @@ class MVX_Commission {
      * @param bool $recalculate
      * @return void 
      */
-    public static function calculate_commission( $commission_id, $order, $recalculate = false ) {
+    public static function calculate_commission( $commission_id, $order, $recalculate = true ) {
         global $MVX;
         if ($commission_id && $order) {
             $commission_type = mvx_get_settings_value($MVX->vendor_caps->payment_cap['commission_type']);
@@ -149,10 +149,10 @@ class MVX_Commission {
                     $meta_data = $item->get_meta_data();
                     // get item commission
                     foreach ( $meta_data as $meta ) {
-                        if($meta->key == '_vendor_item_commission'){
+                        if($meta->key == '_vendor_item_commission') {
                             $commission_amount += floatval($meta->value);
                         }
-                        if($meta->key == '_vendor_order_item_id'){
+                        if($meta->key == '_vendor_order_item_id') {
                             $order_item_id = absint($meta->value);
                             if(isset($commission_rates[$order_item_id])){
                                 $rate = $commission_rates[$order_item_id];
@@ -608,5 +608,4 @@ class MVX_Commission {
             }
         endif;
     }
-
 }

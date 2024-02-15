@@ -54,3 +54,18 @@ class AutoComplete extends Component {
 	}
 }
 export default AutoComplete;
+
+// const AutoComplete = (props) => {
+// 	return (
+// 		<>
+// 			<input
+// 				className={props.inputClass}
+// 				ref={}
+// 			>
+			
+// 			</input>
+// 		</>
+// 	);
+// }
+
+// export default AutoComplete;

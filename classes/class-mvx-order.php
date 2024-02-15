@@ -18,23 +18,23 @@ class MVX_Order {
         // Init MVX Vendor Order class
         $MVX->load_class('vendor-order');
         // Add extra vendor_id to shipping packages
-        add_action('woocommerce_checkout_create_order_line_item', array(&$this, 'add_meta_date_in_order_line_item'), 10, 4);
-        add_action('woocommerce_checkout_create_order_shipping_item', array(&$this, 'add_meta_date_in_shipping_package'), 10, 4);
-        add_action('woocommerce_analytics_update_order_stats', array(&$this, 'woocommerce_analytics_remove_suborder'));
+        // add_action('woocommerce_checkout_create_order_line_item', array(&$this, 'add_meta_date_in_order_line_item'), 10, 4);
+        // add_action('woocommerce_checkout_create_order_shipping_item', array(&$this, 'add_meta_date_in_shipping_package'), 10, 4);
+        // add_action('woocommerce_analytics_update_order_stats', array(&$this, 'woocommerce_analytics_remove_suborder'));
         
         if (is_mvx_version_less_3_4_0()) {
             
         } else {
             // filters order list table
-            if($MVX->hpos_is_enabled){
-                add_action('current_screen', function($screen) {
-                    if('woocommerce_page_wc-orders' === $screen->id) {
-                        add_filter( 'woocommerce_orders_table_query_clauses', array($this, 'wc_order_list_filter') );
-                    }
-                });
-            } else { // before wc version 8.3.0
-                add_filter('request', array($this, 'wc_order_list_filter_old'), 10, 1);
-            }
+            // if($MVX->hpos_is_enabled) {
+            //     add_action('current_screen', function($screen) {
+            //         if('woocommerce_page_wc-orders' === $screen->id) {
+            //             add_filter( 'woocommerce_orders_table_query_clauses', array($this, 'wc_order_list_filter') );
+            //         }
+            //     });
+            // } else { // before wc version 8.3.0
+            //     add_filter('request', array($this, 'wc_order_list_filter_old'), 10, 1);
+            // }
             
             add_action('admin_head', array($this, 'count_processing_order'), 5);
             add_filter('admin_body_class', array( $this, 'add_admin_body_class' ));
@@ -47,7 +47,7 @@ class MVX_Order {
             add_filter( 'woocommerce_customer_available_downloads', array($this, 'woocommerce_customer_available_downloads'), 99);
             add_action('mvx_frontend_enqueue_scripts', array($this, 'mvx_frontend_enqueue_scripts'));
             if( !is_user_mvx_vendor( get_current_user_id() ) ) {
-                if($MVX->hpos_is_enabled){
+                if($MVX->hpos_is_enabled) {
                     add_filter('manage_woocommerce_page_wc-orders_columns', array($this, 'mvx_shop_order_columns'), 99);
                     add_action('manage_woocommerce_page_wc-orders_custom_column', array($this, 'mvx_show_shop_order_columns'), 99, 2);
                 } else { // before wc version 8.3.0
@@ -55,14 +55,17 @@ class MVX_Order {
                     add_action('manage_shop_order_posts_custom_column', array($this, 'mvx_show_shop_order_columns'), 99, 2);
                 }
             }
-            if(apply_filters('mvx_parent_order_to_vendor_order_status_synchronization', true))
-                add_action('woocommerce_order_status_changed', array($this, 'mvx_parent_order_to_vendor_order_status_synchronization'), 90, 4);
-            if(apply_filters('mvx_vendor_order_to_parent_order_status_synchronization', true))
-                add_action('woocommerce_order_status_changed', array($this, 'mvx_vendor_order_to_parent_order_status_synchronization'), 99, 4);
+            // if(apply_filters('mvx_parent_order_to_vendor_order_status_synchronization', true))
+            //     add_action('woocommerce_order_status_changed', array($this, 'mvx_parent_order_to_vendor_order_status_synchronization'), 90, 4);
+            // if(apply_filters('mvx_vendor_order_to_parent_order_status_synchronization', true))
+            //     add_action('woocommerce_order_status_changed', array($this, 'mvx_vendor_order_to_parent_order_status_synchronization'), 99, 4);
             // MVX create orders
             add_action('woocommerce_saved_order_items', array(&$this, 'mvx_create_orders_from_backend'), 10, 2 );
-            add_action('woocommerce_checkout_order_processed', array(&$this, 'mvx_create_orders'), 10, 3);
-            add_action('woocommerce_store_api_checkout_order_processed', array(&$this, 'mvx_create_orders_block_support'), 10, 1);
+            // if(version_compare(WC_VERSION, '8.3.0', '>=')){
+            //     add_action('woocommerce_new_order', array(&$this, 'mvx_create_orders_hpos'), 10, 2);
+            // } else { // before wc version 8.3.0
+            //     // add_action('woocommerce_checkout_order_processed', array(&$this, 'mvx_create_orders'), 10, 3);
+            // }
             add_action('woocommerce_after_checkout_validation', array($this, 'mvx_check_order_awaiting_payment'));
             add_action( 'woocommerce_rest_insert_shop_order_object',array($this,'mvx_create_orders_via_rest_callback'), 10, 3 );
             // Add product for sub order
@@ -99,79 +102,80 @@ class MVX_Order {
         }
     }
 
-    /**
-     * Add order line item meta
-     *
-     * @param item_id, cart_item
-     * @return void 
-     */
+    // /**
+    //  * Add order line item meta
+    //  *
+    //  * @param item_id, cart_item
+    //  * @return void 
+    //  */
 
-    public function add_meta_date_in_order_line_item($item, $item_key, $values, $order) {
-        if ( $order &&  $order->get_parent_id() == 0 || (function_exists('wcs_is_subscription') && wcs_is_subscription( $order )) ) {
-            $general_cap = apply_filters('mvx_sold_by_text', __('Sold By', 'multivendorx'));
-            $vendor = get_mvx_product_vendors($item['product_id']);
-            if ($vendor) {
-                $item->add_meta_data($general_cap, $vendor->page_title);
-                $item->add_meta_data('_vendor_id', $vendor->id);
-            }
-        }
-    }
+    // public function add_meta_date_in_order_line_item($item, $item_key, $values, $order) {
+    //     if ( $order &&  $order->get_parent_id() == 0 || (function_exists('wcs_is_subscription') && wcs_is_subscription( $order )) ) {
+    //         $general_cap = apply_filters('mvx_sold_by_text', __('Sold By', 'multivendorx'));
+    //         $vendor = get_mvx_product_vendors($item['product_id']);
+    //         if ($vendor) {
+    //             $item->add_meta_data($general_cap, $vendor->page_title);
+    //             $item->add_meta_data('_vendor_id', $vendor->id);
+    //         }
+    //     }
+    // }
 
-    /**
-     * 
-     * @param object $item
-     * @param sting $package_key as $vendor_id
-     */
-    public function add_meta_date_in_shipping_package($item, $package_key, $package, $order) {
-        $vendor_id = ( isset( $package['vendor_id'] ) && $package['vendor_id'] ) ? $package['vendor_id'] : $package_key;
-        if (!mvx_get_order($order->get_id()) && is_user_mvx_vendor($vendor_id)) {
-            $item->add_meta_data('vendor_id', $vendor_id, true);
-            $package_qty = array_sum(wp_list_pluck($package['contents'], 'quantity'));
-            $item->add_meta_data('package_qty', $package_qty, true);
-            do_action('mvx_add_shipping_package_meta');
-        }
-    }
+    // /**
+    //  * 
+    //  * @param object $item
+    //  * @param sting $package_key as $vendor_id
+    //  */
+    // public function add_meta_date_in_shipping_package($item, $package_key, $package, $order) {
+    //     $vendor_id = ( isset( $package['vendor_id'] ) && $package['vendor_id'] ) ? $package['vendor_id'] : $package_key;
+    //     if (!mvx_get_order($order->get_id()) && is_user_mvx_vendor($vendor_id)) {
+    //         $item->add_meta_data('vendor_id', $vendor_id, true);
+    //         $package_qty = array_sum(wp_list_pluck($package['contents'], 'quantity'));
+    //         $item->add_meta_data('package_qty', $package_qty, true);
+    //         do_action('mvx_add_shipping_package_meta');
+    //     }
+    // }
 
-    /**
-     * 
-     * Woocommerce admin dashboard restrict dual order report 
-     */
-    public function woocommerce_analytics_remove_suborder($order_id){
-        global $wpdb;
-        if (wp_get_post_parent_id($order_id)) {
-            $wpdb->delete( $wpdb->prefix.'wc_order_stats', array( 'order_id' => $order_id ) );
-            \WC_Cache_Helper::get_transient_version( 'woocommerce_reports', true );
-        }
-        // Only for version 3.5.4
-        $post_id = $wpdb->get_results("SELECT order_id FROM {$wpdb->prefix}wc_order_stats WHERE (parent_id != 0)");
-        if (!empty($post_id)) {
-           foreach ($post_id as $key => $value) {
-                $wpdb->delete( $wpdb->prefix.'wc_order_stats', array( 'order_id' => $value->order_id ) );
-                \WC_Cache_Helper::get_transient_version( 'woocommerce_reports', true );
-            } 
-        }
-    }
-    public function wc_order_list_filter_old($query) {
-        global $typenow;
-        $user = wp_get_current_user();
-        if ('shop_order' == $typenow) {
-            if (current_user_can('administrator') && empty($_REQUEST['s'])) {
-                $query['post_parent'] = 0;
-            } elseif (current_user_can('shop_manager') && empty($_REQUEST['s'])) {
-                $query['post_parent'] = 0;
-            } elseif(in_array('dc_vendor', $user->roles)) {
-                $query['author'] = $user->ID;
-            }
-            return apply_filters("mvx_shop_order_query_request", $query);
-        }
-        return $query;
-    }
+    // /**
+    //  * 
+    //  * Woocommerce admin dashboard restrict dual order report 
+    //  */
+    // public function woocommerce_analytics_remove_suborder($order_id){
+    //     global $wpdb;
+    //     if (wp_get_post_parent_id($order_id)) {
+    //         $wpdb->delete( $wpdb->prefix.'wc_order_stats', array( 'order_id' => $order_id ) );
+    //         \WC_Cache_Helper::get_transient_version( 'woocommerce_reports', true );
+    //     }
+    //     // Only for version 3.5.4
+    //     $post_id = $wpdb->get_results("SELECT order_id FROM {$wpdb->prefix}wc_order_stats WHERE (parent_id != 0)");
+    //     if (!empty($post_id)) {
+    //        foreach ($post_id as $key => $value) {
+    //             $wpdb->delete( $wpdb->prefix.'wc_order_stats', array( 'order_id' => $value->order_id ) );
+    //             \WC_Cache_Helper::get_transient_version( 'woocommerce_reports', true );
+    //         } 
+    //     }
+    // }
 
-    public function wc_order_list_filter($where_cloas) {
-        global $wpdb;
-        $where_cloas['where'] .= ' AND ' . $wpdb->prefix . 'wc_orders.parent_order_id = 0';
-        return $where_cloas;
-    }
+    // public function wc_order_list_filter_old($query) {
+    //     global $typenow;
+    //     $user = wp_get_current_user();
+    //     if ('shop_order' == $typenow) {
+    //         if (current_user_can('administrator') && empty($_REQUEST['s'])) {
+    //             $query['post_parent'] = 0;
+    //         } elseif (current_user_can('shop_manager') && empty($_REQUEST['s'])) {
+    //             $query['post_parent'] = 0;
+    //         } elseif (in_array('dc_vendor', $user->roles)) {
+    //             $query['author'] = $user->ID;
+    //         }
+    //         return apply_filters("mvx_shop_order_query_request", $query);
+    //     }
+    //     return $query;
+    // }
+
+    // public function wc_order_list_filter($where_cloas) {
+    //     global $wpdb;
+    //     $where_cloas['where'] .= ' AND ' . $wpdb->prefix . 'wc_orders.parent_order_id = 0';
+    //     return $where_cloas;
+    // }
     
     public function init_prevent_trigger_vendor_order_emails(){
         $prevent_vendor_order_emails = apply_filters('mvx_prevent_vendor_order_emails_trigger', array(
@@ -295,17 +299,20 @@ class MVX_Order {
         }
     }
     
-    public function mvx_create_orders_block_support($order) {
-        $this->mvx_create_orders($order->get_id(), array(), $order, false); 
+    public function mvx_create_orders_hpos($order_id, $order) {
+        $posted_data = array();
+        $this->mvx_create_orders($order_id, $posted_data, $order, false);
     }
+
     public function mvx_create_orders($order_id, $posted_data, $order, $backend = false) {
         global $MVX;
         //check parent order exist
         if (wp_get_post_parent_id($order_id) != 0)
-            return false;
-
-        // $order = wc_get_order($order_id);
+        return false;
+    
+    // $order = wc_get_order($order_id);
         $items = $order->get_items();
+        // MVX()->utility->LOG(json_encode($items, JSON_PRETTY_PRINT));
         $vendor_items = array();
         foreach ($items as $item_id => $item) {
             if (isset($item['product_id']) && $item['product_id'] !== 0) {
@@ -332,6 +339,7 @@ class MVX_Order {
         $order->update_meta_data('has_mvx_sub_order', true);
         $order->save();
         $vendor_orders = array();
+        // MVX()->utility->LOG(json_encode("world", JSON_PRETTY_PRINT));
         foreach ($vendor_items as $vendor_id => $items) {
             if (!empty($items)) {
                 $vendor_orders[] = self::create_vendor_order($order, array(
@@ -349,7 +357,7 @@ class MVX_Order {
         endif;
     }
     
-    public function mvx_create_orders_from_backend( $order_id, $items ){
+    public function mvx_create_orders_from_backend( $order_id, $items ) {
         $this->mvx_manually_create_order_item_and_suborder($order_id, $items, false);
     }
     
@@ -849,97 +857,97 @@ class MVX_Order {
         }
     }
 
-    public function mvx_parent_order_to_vendor_order_status_synchronization($order_id, $old_status, $new_status, $order) {
-        global $MVX;
-        if(!$order_id) return;
-        // Check order have status
-        if (empty($new_status)) {
-            $new_status = $order->get_status('edit');
-        }    
-        $status_to_sync = apply_filters('mvx_parent_order_to_vendor_order_statuses_to_sync',array('on-hold', 'pending', 'processing', 'cancelled', 'failed'));
-        if( in_array($new_status, $status_to_sync) ) :
-            if (wp_get_post_parent_id( $order_id ) || $order->get_meta( 'mvx_vendor_order_status_synchronized', true))
-                return false;
+    // public function mvx_parent_order_to_vendor_order_status_synchronization($order_id, $old_status, $new_status, $order) {
+    //     global $MVX;
+    //     if(!$order_id) return;
+    //     // Check order have status
+    //     if (empty($new_status)) {
+    //         $new_status = $order->get_status('edit');
+    //     }    
+    //     $status_to_sync = apply_filters('mvx_parent_order_to_vendor_order_statuses_to_sync',array('on-hold', 'pending', 'processing', 'cancelled', 'failed'));
+    //     if( in_array($new_status, $status_to_sync) ) :
+    //         if (wp_get_post_parent_id( $order_id ) || $order->get_meta( 'mvx_vendor_order_status_synchronized', true))
+    //             return false;
             
-            remove_action( 'woocommerce_order_status_completed', 'wc_paying_customer' );
-            // Check if order have sub-order
-            $mvx_suborders = get_mvx_suborders($order_id);
-            if ($mvx_suborders) {
-                foreach ($mvx_suborders as $suborder) {
-                    $suborder->update_status($new_status, _x('Update via parent order: ', 'Order note', 'multivendorx'));
-                }
-                $order->update_meta_data('mvx_vendor_order_status_synchronized', true);
-                $order->save();
-                add_action( 'woocommerce_order_status_completed', 'wc_paying_customer' );
-            }
-        endif;
-    }
+    //         remove_action( 'woocommerce_order_status_completed', 'wc_paying_customer' );
+    //         // Check if order have sub-order
+    //         $mvx_suborders = get_mvx_suborders($order_id);
+    //         if ($mvx_suborders) {
+    //             foreach ($mvx_suborders as $suborder) {
+    //                 $suborder->update_status($new_status, _x('Update via parent order: ', 'Order note', 'multivendorx'));
+    //             }
+    //             $order->update_meta_data('mvx_vendor_order_status_synchronized', true);
+    //             $order->save();
+    //         }
+    //         add_action( 'woocommerce_order_status_completed', 'wc_paying_customer' );
+    //     endif;
+    // }
     
-    public function mvx_vendor_order_to_parent_order_status_synchronization($order_id, $old_status, $new_status, $order){
-        $is_vendor_order = ($order_id) ? mvx_get_order($order_id) : false;
-        if ($is_vendor_order && current_user_can('administrator') && $new_status != $old_status && apply_filters('mvx_vendor_notified_when_admin_change_status', true)) {
-            $email_admin = WC()->mailer()->emails['WC_Email_Admin_Change_Order_Status'];
-            $vendor_id = $order->get_meta( '_vendor_id', true);
-            $vendor = get_mvx_vendor($vendor_id);
-            $email_admin->trigger($order_id, $new_status, $vendor);
-        }
-        // parent order synchronization
-        $parent_order_id = $order->get_parent_id();
-        if($parent_order_id){
-            remove_action('woocommerce_order_status_changed', array($this, 'mvx_parent_order_to_vendor_order_status_synchronization'), 90, 4);
-            $status_to_sync = apply_filters('mvx_vendor_order_to_parent_order_statuses_to_sync',array('completed', 'refunded'));
+//     public function mvx_vendor_order_to_parent_order_status_synchronization($order_id, $old_status, $new_status, $order){
+//         $is_vendor_order = ($order_id) ? mvx_get_order($order_id) : false;
+//         if ($is_vendor_order && current_user_can('administrator') && $new_status != $old_status && apply_filters('mvx_vendor_notified_when_admin_change_status', true)) {
+//             $email_admin = WC()->mailer()->emails['WC_Email_Admin_Change_Order_Status'];
+//             $vendor_id = $order->get_meta( '_vendor_id', true);
+//             $vendor = get_mvx_vendor($vendor_id);
+//             $email_admin->trigger($order_id, $new_status, $vendor);
+//         }
+//         // parent order synchronization
+//         $parent_order_id = $order->get_parent_id();
+//         if($parent_order_id){
+//             remove_action('woocommerce_order_status_changed', array($this, 'mvx_parent_order_to_vendor_order_status_synchronization'), 90, 4);
+//             $status_to_sync = apply_filters('mvx_vendor_order_to_parent_order_statuses_to_sync',array('completed', 'refunded'));
 
-            $mvx_suborders = get_mvx_suborders( $parent_order_id );
-            $new_status_count  = 0;
-            $suborder_count    = count( $mvx_suborders );
-            $suborder_statuses = array();
-            $suborder_totals = 0;
-            foreach ( $mvx_suborders as $suborder ) {
-                $suborder_totals += $suborder->get_total();
-                $suborder_status = $suborder->get_status( 'edit' );
-                if ( $new_status == $suborder_status ) {
-                    $new_status_count ++;
-                }
+//             $mvx_suborders = get_mvx_suborders( $parent_order_id );
+//             $new_status_count  = 0;
+//             $suborder_count    = count( $mvx_suborders );
+//             $suborder_statuses = array();
+//             $suborder_totals = 0;
+//             foreach ( $mvx_suborders as $suborder ) {
+//                 $suborder_totals += $suborder->get_total();
+//                 $suborder_status = $suborder->get_status( 'edit' );
+//                 if ( $new_status == $suborder_status ) {
+//                     $new_status_count ++;
+//                 }
 
-                if ( ! isset( $suborder_statuses[ $suborder_status ] ) ) {
-                    $suborder_statuses[ $suborder_status ] = 1;
-                } else {
-                    $suborder_statuses[ $suborder_status ] ++;
-                }
-            }
+//                 if ( ! isset( $suborder_statuses[ $suborder_status ] ) ) {
+//                     $suborder_statuses[ $suborder_status ] = 1;
+//                 } else {
+//                     $suborder_statuses[ $suborder_status ] ++;
+//                 }
+//             }
 
-            $parent_order = wc_get_order( $parent_order_id );
-            if($parent_order->get_total() == wc_format_decimal($suborder_totals)) {
-                if ( $suborder_count == $new_status_count && in_array( $new_status, $status_to_sync ) ) {
-                    $parent_order->update_status( $new_status, _x( "Sync from vendor's suborders: ", 'Order note', 'multivendorx' ) );
-                } elseif ( $suborder_count != 0 ) {
-                    /**
-                     * If the parent order have only 1 suborder I can sync it with the same status.
-                     * Otherwise I set the parent order to processing
-                     */
-                    $status = array_unique(array_keys($suborder_statuses));
-                    if ( $suborder_count == 1 ) {
-                        $new_status = isset($status[0]) ? $status[0] : $new_status;
-                        $parent_order->update_status( $new_status, _x( "Sync from vendor's suborders: ", 'Order note', 'multivendorx' ) );
-                    } /**
-                     * Check only for suborder > 1 to exclude orders without suborder
-                     */
-                    elseif ( $suborder_count > 1 ) {
-                        $check = 0;
-//                        foreach ( $status_to_sync as $status ) {
-//                            if ( ! empty( $suborder_statuses[ $status ] ) ) {
-//                                $check += $suborder_statuses[ $status ];
-//                            }
-//                        }
-                        if( count($status) == 1 && isset($status[0]) ) {
-                            $parent_order->update_status( $new_status, _x( "Sync from vendor's suborders: ", 'Order note', 'multivendorx' ) );
-                        }
-                    }
-                }
-            }
-            add_action('woocommerce_order_status_changed', array($this, 'mvx_parent_order_to_vendor_order_status_synchronization'), 90, 4);
-        }
-    }
+//             $parent_order = wc_get_order( $parent_order_id );
+//             if($parent_order->get_total() == wc_format_decimal($suborder_totals)) {
+//                 if ( $suborder_count == $new_status_count && in_array( $new_status, $status_to_sync ) ) {
+//                     $parent_order->update_status( $new_status, _x( "Sync from vendor's suborders: ", 'Order note', 'multivendorx' ) );
+//                 } elseif ( $suborder_count != 0 ) {
+//                     /**
+//                      * If the parent order have only 1 suborder I can sync it with the same status.
+//                      * Otherwise I set the parent order to processing
+//                      */
+//                     $status = array_unique(array_keys($suborder_statuses));
+//                     if ( $suborder_count == 1 ) {
+//                         $new_status = isset($status[0]) ? $status[0] : $new_status;
+//                         $parent_order->update_status( $new_status, _x( "Sync from vendor's suborders: ", 'Order note', 'multivendorx' ) );
+//                     } /**
+//                      * Check only for suborder > 1 to exclude orders without suborder
+//                      */
+//                     elseif ( $suborder_count > 1 ) {
+//                         $check = 0;
+// //                        foreach ( $status_to_sync as $status ) {
+// //                            if ( ! empty( $suborder_statuses[ $status ] ) ) {
+// //                                $check += $suborder_statuses[ $status ];
+// //                            }
+// //                        }
+//                         if( count($status) == 1 && isset($status[0]) ) {
+//                             $parent_order->update_status( $new_status, _x( "Sync from vendor's suborders: ", 'Order note', 'multivendorx' ) );
+//                         }
+//                     }
+//                 }
+//             }
+//             add_action('woocommerce_order_status_changed', array($this, 'mvx_parent_order_to_vendor_order_status_synchronization'), 90, 4);
+//         }
+//     }
 
     public function mvx_check_order_awaiting_payment() {
         // Insert or update the post data
@@ -1323,7 +1331,7 @@ class MVX_Order {
                $parent_downloads[] = $download;
        }
        return $parent_downloads;
-   }
+    }
     
     public function mvx_frontend_enqueue_scripts(){
         if(is_account_page()){

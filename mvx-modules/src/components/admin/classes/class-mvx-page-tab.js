@@ -6,6 +6,7 @@ import BannerSection from './class-mvx-page-banner';
 export default class TabSection extends React.Component {
 	state = {};
 	constructor(props) {
+		console.log(props);
 		super(props);
 		this.state = {};
 	}
